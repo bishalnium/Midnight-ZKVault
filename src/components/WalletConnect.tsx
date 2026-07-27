@@ -6,6 +6,7 @@ interface WalletConnectProps {
   isConnecting: boolean;
   address: string | null;
   network: string | null;
+  walletName: string | null;
   error: string | null;
   isInstalled: boolean;
   onConnect: () => void;
@@ -17,6 +18,7 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
   isConnecting,
   address,
   network,
+  walletName,
   error,
   isInstalled,
   onConnect,
@@ -30,8 +32,10 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
             <Wallet className="w-6 h-6 text-indigo-400" />
           </div>
           <div>
-            <h3 className="font-semibold text-lg text-slate-100">Lace Midnight Wallet</h3>
-            <p className="text-xs text-slate-400">Preprod DApp Connector</p>
+            <h3 className="font-semibold text-lg text-slate-100">
+              {walletName || '1AM / 1AIM & Lace Wallet'}
+            </h3>
+            <p className="text-xs text-slate-400">Midnight DApp Connector API (`window.midnight`)</p>
           </div>
         </div>
 
@@ -61,8 +65,8 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
         <div className="space-y-4">
           <div className="p-4 bg-slate-950/60 border border-slate-800/80 rounded-xl space-y-2">
             <div className="flex justify-between items-center text-xs text-slate-400">
-              <span>Connected Address</span>
-              <span className="text-indigo-400 font-mono">{network || 'Preprod Testnet'}</span>
+              <span>Active Wallet Address ({walletName || '1AM / 1AIM'})</span>
+              <span className="text-indigo-400 font-mono">{network || 'Midnight Preprod'}</span>
             </div>
             <div className="font-mono text-sm text-slate-200 break-all bg-slate-900 p-2.5 rounded-lg border border-slate-800">
               {address}
@@ -81,7 +85,7 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
         /* Disconnected State UI */
         <div className="space-y-4">
           <p className="text-sm text-slate-400">
-            Connect your Lace browser wallet extension to sign zero-knowledge proofs on the Midnight Preprod network.
+            Connect your <strong>1AM / 1AIM Wallet</strong> (or Lace Wallet) extension to sign zero-knowledge proofs on the Midnight Preprod network.
           </p>
 
           <button
@@ -90,22 +94,8 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
             className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold rounded-xl transition duration-200 shadow-lg shadow-indigo-500/20 disabled:opacity-50"
           >
             <Shield className="w-5 h-5" />
-            <span>{isConnecting ? 'Connecting to Lace...' : 'Connect Lace Wallet'}</span>
+            <span>{isConnecting ? 'Connecting to 1AM / 1AIM...' : 'Connect 1AM / 1AIM Wallet'}</span>
           </button>
-
-          {!isInstalled && (
-            <p className="text-xs text-center text-slate-500">
-              Don't have Lace Wallet? Install it from{' '}
-              <a
-                href="https://www.lace.io/"
-                target="_blank"
-                rel="noreferrer"
-                className="text-indigo-400 hover:underline"
-              >
-                lace.io
-              </a>
-            </p>
-          )}
         </div>
       )}
     </div>

@@ -59,7 +59,7 @@ export function App() {
           </h2>
 
           <p className="text-slate-300 max-w-2xl mx-auto text-sm leading-relaxed">
-            Connect your Lace wallet on Midnight Preprod to generate local Zero-Knowledge proofs. Prove vault secret authorization on-chain without ever revealing private user inputs.
+            Connect your 1AM / 1AIM wallet on Midnight Preprod to generate local Zero-Knowledge proofs. Prove vault secret authorization on-chain without ever revealing private user inputs.
           </p>
         </div>
 
@@ -71,6 +71,7 @@ export function App() {
             isConnecting={midnight.isConnecting}
             address={midnight.address}
             network={midnight.network}
+            walletName={midnight.walletName}
             error={midnight.error}
             isInstalled={midnight.isInstalled}
             onConnect={midnight.connectWallet}
