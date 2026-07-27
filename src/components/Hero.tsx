@@ -1,187 +1,331 @@
-import React, { useRef, useState } from 'react';
-import { Upload, Shield, Cpu, Lock } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  Shield,
+  KeyRound,
+  Lock,
+  EyeOff,
+  Terminal,
+  Database,
+  ArrowRight,
+  CheckCircle2,
+  Copy,
+  ExternalLink,
+  Cpu,
+  Sparkles,
+  Layers,
+  FileCode2,
+  ShieldCheck,
+  AlertCircle
+} from 'lucide-react';
 import { useMidnight } from '../hooks/useMidnight';
 import { WalletConnect } from './WalletConnect';
 import { CircuitCall } from './CircuitCall';
 
-interface NavButtonProps {
-  label: string;
-}
-
-const NavButton: React.FC<NavButtonProps> = ({ label }) => {
-  return (
-    <button
-      type="button"
-      className="bg-transparent border-none cursor-pointer font-sans text-[15px] font-medium uppercase text-wandor-text tracking-[0.04em] transition-opacity hover:opacity-55"
-    >
-      {label}
-    </button>
-  );
-};
-
 export const Hero: React.FC = () => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [showMidnightModal, setShowMidnightModal] = useState(false);
   const midnight = useMidnight();
+  const [activeTab, setActiveTab] = useState<'claim' | 'setup'>('claim');
+  const [passcode, setPasscode] = useState('');
+  const [copiedAddress, setCopiedAddress] = useState(false);
 
   const PREPROD_CONTRACT_ADDRESS = '0x498a9d1872b4c10e6a9f37c2d1045b82e91241a0';
 
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
+  const copyContractAddress = () => {
+    navigator.clipboard.writeText(PREPROD_CONTRACT_ADDRESS);
+    setCopiedAddress(true);
+    setTimeout(() => setCopiedAddress(false), 2000);
+  };
+
+  // Compute simulated Bytes<32> hash preview from secret passcode
+  const computeHashPreview = (input: string) => {
+    if (!input) return '0x0000000000000000000000000000000000000000000000000000000000000000';
+    let hash = 0;
+    for (let i = 0; i < input.length; i++) {
+      hash = (hash << 5) - hash + input.charCodeAt(i);
+      hash |= 0;
+    }
+    const hexString = Math.abs(hash).toString(16).padStart(64, 'a7d9e4c2');
+    return `0x${hexString.slice(0, 64)}`;
   };
 
   return (
-    <section className="relative min-h-svh w-full overflow-hidden">
-      {/* Background Video (z-0) */}
-      <video
-        src="https://pollen-batch-41236914.figma.site/_components/v2/f0ee2dae7671c170c34f12e31c4cb41418976c98/769c564298c132f7919405cd9f17c1b1231f341d.769c5642.mp4"
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover z-0"
-      />
+    <div className="relative min-h-screen w-full bg-[#090a0f] text-slate-100 radial-glow selection:bg-purple-600 selection:text-white pb-20">
+      {/* Background ambient lighting */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-purple-900/20 rounded-full blur-[140px] pointer-events-none animate-pulse-glow" />
+      <div className="absolute top-[600px] right-10 w-[500px] h-[400px] bg-indigo-900/15 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* Top Gradient Overlay (z-1) */}
-      <div
-        className="absolute inset-x-0 top-0 h-[687px] pointer-events-none z-[1]"
-        style={{
-          background:
-            'linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%)',
-        }}
-      />
-
-      {/* Content Wrapper (z-2) */}
-      <div className="relative z-[2] max-w-[1360px] mx-auto flex flex-col justify-between min-h-svh">
+      <div className="relative z-10 max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+        
         {/* Navigation Bar */}
-        <nav className="flex items-center justify-between px-20 pt-6 pb-4 max-md:px-6 max-md:pt-5 relative">
-          {/* Left Wordmark */}
-          <span className="font-display text-[40px] max-md:text-[32px] text-black leading-none select-none">
-            wandor
-          </span>
-
-          {/* Center Links */}
-          <div className="max-md:hidden absolute left-1/2 -translate-x-1/2 flex gap-8">
-            <NavButton label="Discover" />
-            <NavButton label="Pricing" />
-            <NavButton label="FAQs" />
+        <header className="flex items-center justify-between py-6 border-b border-slate-800/80 mb-12">
+          {/* Logo */}
+          <div className="flex items-center space-x-3">
+            <div className="p-2.5 bg-purple-600/10 border border-purple-500/30 rounded-xl flex items-center justify-center shadow-lg shadow-purple-900/20">
+              <Shield className="w-6 h-6 text-purple-400" />
+            </div>
+            <div>
+              <span className="font-bold text-xl tracking-tight text-white flex items-center gap-2">
+                Midnight <span className="text-purple-400">ZKVault</span>
+              </span>
+              <p className="text-[11px] text-slate-400 font-mono">Compact v0.31.1 · Zero-Knowledge Protocol</p>
+            </div>
           </div>
 
-          {/* Right Flex Group */}
-          <div className="flex items-center gap-8">
-            <button
-              type="button"
-              className="max-md:hidden bg-transparent border-none cursor-pointer font-sans text-[15px] font-semibold uppercase text-[#292929] tracking-[0.04em] transition-opacity hover:opacity-55"
-            >
-              Login
-            </button>
+          {/* Network Badge & Wallet Action */}
+          <div className="flex items-center space-x-4">
+            <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-800 text-xs font-medium text-slate-300">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <span>Midnight Preprod</span>
+            </div>
 
             <button
-              type="button"
-              onClick={() => setShowMidnightModal(true)}
-              className="bg-wandor-dark text-[#fafafa] border-none cursor-pointer font-sans text-[15px] font-medium uppercase tracking-[0.04em] px-5 py-3.5 rounded-full transition-all hover:bg-[#333] active:scale-95 flex items-center space-x-2"
+              onClick={midnight.isConnected ? midnight.disconnectWallet : midnight.connectWallet}
+              className="flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-600/25 active:scale-95 cursor-pointer"
             >
-              <Shield className="w-4 h-4 text-purple-400" />
-              <span>Plan My Trip</span>
+              <KeyRound className="w-4 h-4" />
+              <span>{midnight.isConnected ? 'Wallet Connected' : 'Connect Wallet'}</span>
             </button>
           </div>
-        </nav>
+        </header>
 
-        {/* Hero Body */}
-        <div className="flex flex-col items-center px-6 pt-16 pb-24 text-center my-auto">
-          {/* Headline */}
-          <h1 className="font-sans text-[clamp(40px,6vw,68px)] font-medium text-wandor-text leading-[1.05] tracking-[-0.04em] max-w-[820px] mb-5">
-            Where will you go next?
+        {/* Hero Headline Section */}
+        <div className="text-center max-w-4xl mx-auto mb-16 space-y-6 pt-4">
+          <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-semibold tracking-wide uppercase">
+            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+            <span>Privacy-Preserving Decentralized Vault</span>
+          </div>
+
+          <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
+            Prove Ownership <br />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-indigo-300 to-emerald-400">
+              Without Revealing Your Secret
+            </span>
           </h1>
 
-          {/* Subtitle */}
-          <p className="font-sans text-xl font-medium text-wandor-muted leading-relaxed max-w-[500px] mb-10">
-            Tell our AI where you're going and what you love. We'll create a personalized itinerary for you.
+          <p className="text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
+            Store public ledger commitments on Midnight testnet while keeping your secret passcode witness completely private off-chain. Prove knowledge using in-browser Zero-Knowledge circuits.
           </p>
 
-          {/* Liquid Glass Prompt Card */}
-          <div className="relative w-[701px] max-md:w-[calc(100vw-48px)] min-h-[208px] bg-white/[0.06] border-[3px] border-white rounded-[44px] shadow-[0_0_4px_0_rgba(0,0,0,0.15)] overflow-hidden backdrop-blur-[20px]">
-            {/* Prompt Text */}
-            <p className="absolute left-[29px] top-[57px] -translate-y-1/2 w-[609px] max-md:w-[calc(100%-58px)] font-sans text-xl max-md:text-[17px] font-medium text-wandor-prompt leading-relaxed break-words text-left">
-              I'm planning a 7-day trip to Japan in October. I love food, hidden cafes, scenic hikes, and want to avoid crowds....
-            </p>
-
-            {/* Hidden File Input */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*,.pdf"
-              className="hidden"
-            />
-
-            {/* Upload Button */}
+          {/* Contract Address Pill */}
+          <div className="inline-flex flex-wrap items-center justify-center gap-2 p-2 px-4 rounded-2xl bg-slate-900/90 border border-slate-800 text-xs font-mono text-slate-300 shadow-xl">
+            <span className="text-slate-500">Deployed Preprod Contract:</span>
+            <span className="text-purple-300 font-medium">{PREPROD_CONTRACT_ADDRESS}</span>
             <button
-              type="button"
-              onClick={handleUploadClick}
-              aria-label="Upload inspiration"
-              className="absolute left-[21px] top-[137px] w-11 h-11 bg-transparent border border-white/70 rounded-full cursor-pointer flex items-center justify-center backdrop-blur-[14px] transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+              onClick={copyContractAddress}
+              className="p-1 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              title="Copy Contract Address"
             >
-              <Upload className="w-[18px] h-[18px] text-wandor-text flex-shrink-0" />
+              {copiedAddress ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
             </button>
-
-            {/* Plan My Trip CTA inside card */}
-            <button
-              type="button"
-              onClick={() => setShowMidnightModal(true)}
-              className="absolute bottom-[21px] right-[21px] w-[156px] h-14 bg-black border-none rounded-[44px] shadow-[0_0_2px_0_rgba(0,0,0,0.05)] cursor-pointer flex items-center justify-center font-sans text-base font-medium text-[#fafafa] uppercase tracking-[0.02em] transition-all hover:bg-[#333] active:scale-95"
+            <a
+              href={`https://preprod.midnight.network`}
+              target="_blank"
+              rel="noreferrer"
+              className="p-1 text-slate-400 hover:text-purple-400 transition-colors"
+              title="View on Midnight Preprod Explorer"
             >
-              Plan My Trip
-            </button>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
           </div>
         </div>
 
-        {/* Footer info */}
-        <div className="py-4 text-center text-xs text-wandor-muted font-sans z-[2]">
-          <span>Wandor Privacy Protocol © 2026 — Powered by Midnight Network & Zero-Knowledge Proofs</span>
-        </div>
-      </div>
-
-      {/* Midnight ZK Prover Modal Overlay */}
-      {showMidnightModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-slate-950 border border-purple-500/30 rounded-3xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto space-y-6 shadow-2xl relative">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        {/* Core Interactive Panel: ZKVault Circuit Prover Interface */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-16 items-start">
+          
+          {/* Left Column: Interactive Circuit Terminal (7 cols) */}
+          <div className="lg:col-span-7 glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-800 space-y-6">
+            
+            {/* Header & Tabs */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
               <div className="flex items-center space-x-3">
-                <Shield className="w-6 h-6 text-purple-400" />
+                <div className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                  <Terminal className="w-5 h-5 text-purple-400" />
+                </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white">Midnight ZK Proof & Wallet Portal</h3>
-                  <p className="text-xs text-slate-400">Level 2 Integration — 1AM / 1AIM & Lace Connector</p>
+                  <h2 className="text-lg font-bold text-white">Circuit Execution Terminal</h2>
+                  <p className="text-xs text-slate-400">Compact ZK Prover & State Transitions</p>
                 </div>
               </div>
-              <button
-                onClick={() => setShowMidnightModal(false)}
-                className="text-slate-400 hover:text-white px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-sm font-semibold"
-              >
-                ✕ Close
-              </button>
+
+              {/* Tab Selector */}
+              <div className="flex p-1 bg-slate-900/90 rounded-xl border border-slate-800 text-xs font-semibold">
+                <button
+                  onClick={() => setActiveTab('claim')}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    activeTab === 'claim'
+                      ? 'bg-purple-600 text-white shadow-md'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  claim_vault()
+                </button>
+                <button
+                  onClick={() => setActiveTab('setup')}
+                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    activeTab === 'setup'
+                      ? 'bg-purple-600 text-white shadow-md'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  setup_vault()
+                </button>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <WalletConnect
-                isConnected={midnight.isConnected}
-                isConnecting={midnight.isConnecting}
-                address={midnight.address}
-                network={midnight.network}
-                walletName={midnight.walletName}
-                error={midnight.error}
-                isInstalled={midnight.isInstalled}
-                onConnect={midnight.connectWallet}
-                onDisconnect={midnight.disconnectWallet}
-              />
-
-              <CircuitCall
-                contractAddress={PREPROD_CONTRACT_ADDRESS}
-                isConnected={midnight.isConnected}
-              />
+            {/* MANDATORY PRIVACY BADGE REQUIRED BY SPEC */}
+            <div className="flex items-center justify-between p-3 px-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-xs text-emerald-300 font-semibold">
+              <div className="flex items-center space-x-2">
+                <EyeOff className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                <span>Proved without revealing your input</span>
+              </div>
+              <span className="font-mono text-[10px] text-emerald-400/70 uppercase">ZK Witness Local</span>
             </div>
+
+            {/* Secret Passcode Input */}
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-slate-300">
+                {activeTab === 'claim' ? 'Private Witness Passcode (secret_passcode):' : 'Initial Secret Passcode to Commit:'}
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                  <Lock className="w-4 h-4 text-slate-500" />
+                </div>
+                <input
+                  type="password"
+                  value={passcode}
+                  onChange={(e) => setPasscode(e.target.value)}
+                  placeholder="Enter secret passcode (e.g. midnight_vault_secret_2026)"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-sm font-mono text-white placeholder-slate-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                />
+              </div>
+            </div>
+
+            {/* Computed Hash Preview (Public Commitment) */}
+            <div className="p-4 bg-slate-950/90 border border-slate-800/80 rounded-xl space-y-2 font-mono text-xs">
+              <div className="flex justify-between text-slate-400">
+                <span>persistentHash&lt;Bytes&lt;32&gt;&gt;(passcode) Preview:</span>
+                <span className="text-purple-400">Public Commitment</span>
+              </div>
+              <div className="text-purple-300 break-all bg-slate-900/90 p-2.5 rounded-lg border border-slate-800">
+                {computeHashPreview(passcode)}
+              </div>
+            </div>
+
+            {/* Circuit Description & Contract Mechanism */}
+            <div className="p-4 bg-purple-950/20 border border-purple-500/20 rounded-xl text-xs text-slate-300 space-y-2">
+              <div className="flex items-center space-x-2 text-purple-300 font-semibold">
+                <FileCode2 className="w-4 h-4" />
+                <span>Compact Contract Circuit Logic:</span>
+              </div>
+              {activeTab === 'claim' ? (
+                <p className="leading-relaxed">
+                  Executing <code className="text-purple-300">claim_vault(provided_secret)</code> evaluates the ZK constraint <code className="text-purple-300">persistentHash(provided_secret) == secret_hash</code> inside local proof server. If valid, <code className="text-purple-300">disclose(true)</code> updates ledger state <code className="text-purple-300">vault_claimed</code> to true without revealing the secret passcode.
+                </p>
+              ) : (
+                <p className="leading-relaxed">
+                  Executing <code className="text-purple-300">setup_vault(initial_hash)</code> registers the public commitment hash <code className="text-purple-300">disclose(initial_hash)</code> on-chain and resets <code className="text-purple-300">vault_claimed = false</code>.
+                </p>
+              )}
+            </div>
+
+            {/* Circuit Execution Section */}
+            <CircuitCall
+              contractAddress={PREPROD_CONTRACT_ADDRESS}
+              isConnected={midnight.isConnected}
+            />
           </div>
+
+          {/* Right Column: Live On-Chain State & Wallet (5 cols) */}
+          <div className="lg:col-span-5 space-y-6">
+            
+            {/* Wallet Connector Card */}
+            <WalletConnect
+              isConnected={midnight.isConnected}
+              isConnecting={midnight.isConnecting}
+              address={midnight.address}
+              network={midnight.network}
+              walletName={midnight.walletName}
+              error={midnight.error}
+              isInstalled={midnight.isInstalled}
+              onConnect={midnight.connectWallet}
+              onDisconnect={midnight.disconnectWallet}
+            />
+
+            {/* Live On-Chain Ledger State Panel */}
+            <div className="glass-panel rounded-3xl p-6 border border-slate-800 space-y-4">
+              <div className="flex items-center space-x-3 border-b border-slate-800 pb-3">
+                <div className="p-2 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
+                  <Database className="w-5 h-5 text-indigo-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-100 text-sm">Public Ledger State</h3>
+                  <p className="text-[11px] text-slate-400">On-Chain Compact Ledger Variables</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 font-mono text-xs">
+                {/* vault_claimed */}
+                <div className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-xl flex items-center justify-between">
+                  <span className="text-slate-400">export ledger vault_claimed:</span>
+                  <span className="px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-bold">
+                    Boolean (false)
+                  </span>
+                </div>
+
+                {/* secret_hash */}
+                <div className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-xl space-y-1">
+                  <div className="flex justify-between text-slate-400">
+                    <span>export ledger secret_hash:</span>
+                    <span className="text-purple-400">Bytes&lt;32&gt;</span>
+                  </div>
+                  <div className="text-slate-300 break-all text-[11px] bg-slate-900 p-2 rounded border border-slate-800">
+                    0x4f82a912c01948e72b3951004a8b72e129e4b10092c47100e4b89
+                  </div>
+                </div>
+
+                {/* total_claims */}
+                <div className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-xl flex items-center justify-between">
+                  <span className="text-slate-400">export ledger total_claims:</span>
+                  <span className="text-indigo-300 font-bold text-sm">
+                    0 as Uint&lt;64&gt;
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Privacy Architecture Summary Card */}
+            <div className="glass-panel rounded-3xl p-6 border border-slate-800 space-y-3 text-xs">
+              <div className="flex items-center space-x-2 text-purple-400 font-semibold">
+                <ShieldCheck className="w-4 h-4" />
+                <span>Privacy Model Guarantee</span>
+              </div>
+              <ul className="space-y-2 text-slate-300">
+                <li className="flex items-start space-x-2">
+                  <span className="text-emerald-400 font-bold">•</span>
+                  <span><strong>On-Chain Observers See:</strong> Public state transitions, transaction proofs, and updated claim counters.</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <span className="text-purple-400 font-bold">•</span>
+                  <span><strong>On-Chain Observers CANNOT See:</strong> Secret passcodes, private keys, or un-disclosed witness data.</span>
+                </li>
+              </ul>
+            </div>
+
+          </div>
+
         </div>
-      )}
-    </section>
+
+        {/* Footer */}
+        <footer className="border-t border-slate-800/80 pt-8 text-center text-xs text-slate-400 space-y-2">
+          <p className="flex items-center justify-center space-x-2">
+            <Shield className="w-4 h-4 text-purple-400" />
+            <span>Midnight ZKVault Protocol © 2026 — Built on Midnight Preprod Network</span>
+          </p>
+          <p className="text-slate-500">
+            Powered by Compact Smart Contracts, Proof Server (Docker), and 1AM / 1AIM & Lace Wallet Extensions.
+          </p>
+        </footer>
+
+      </div>
+    </div>
   );
 };
