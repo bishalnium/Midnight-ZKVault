@@ -1,12 +1,14 @@
 {
   "name": "midnight-zk-vault",
-  "version": "1.0.0",
-  "description": "Midnight Level 1 New Moon - Privacy-Preserving ZKVault DApp",
+  "version": "2.0.0",
+  "description": "Midnight Level 2 - React + Lace Wallet Frontend DApp Integration",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
     "compile": "wsl -d Ubuntu bash -i -c 'compact compile contract/zk_vault.compact managed'",
-    "build": "tsc",
     "test": "vitest run",
     "deploy": "tsx scripts/deploy.ts"
   },
@@ -15,17 +17,28 @@
     "compact",
     "zero-knowledge",
     "privacy",
-    "cardano"
+    "lace-wallet",
+    "react",
+    "vite"
   ],
   "author": "Bishal",
   "license": "MIT",
+  "dependencies": {
+    "@midnight-ntwrk/compact-runtime": "^0.16.0",
+    "@midnight-ntwrk/dapp-connector-api": "^4.0.1",
+    "@midnight-ntwrk/midnight-js": "^4.1.1",
+    "lucide-react": "^0.378.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.2.1",
     "tsx": "^4.7.0",
     "typescript": "^5.4.0",
+    "vite": "^5.2.0",
     "vitest": "^1.5.0"
-  },
-  "dependencies": {
-    "@midnight-ntwrk/compact-runtime": "^0.16.0"
   }
 }
