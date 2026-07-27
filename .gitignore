@@ -1,0 +1,21 @@
+# Node dependencies
+node_modules/
+npm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# OS / IDE files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Build logs
+*.log
+
+# DO NOT IGNORE managed/ (required for Midnight Level 1 circuit verification)
+!managed/
+!managed/**
