@@ -1,0 +1,21 @@
+/* Modern Vanilla CSS Design Tokens for Midnight DApp */
+:root {
+  --bg-slate-950: #020617;
+  --bg-slate-900: #0f172a;
+  --text-slate-100: #f8fafc;
+  --accent-purple: #9333ea;
+  --accent-indigo: #4f46e5;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #020617;
+  color: #f8fafc;
+  -webkit-font-smoothing: antialiased;
+}
+
+code, pre {
+  font-family: 'JetBrains Mono', monospace;
+}
