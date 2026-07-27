@@ -1,0 +1,24 @@
+pragma language_version >= 0.23.0;
+
+import CompactStandardLibrary;
+
+export ledger vault_claimed: Boolean;
+export ledger secret_hash: Bytes<32>;
+export ledger total_claims: Uint<64>;
+
+witness secret_passcode(): Bytes<32>;
+
+export circuit setup_vault(initial_hash: Bytes<32>): [] {
+    secret_hash = disclose(initial_hash);
+    vault_claimed = false;
+    total_claims = 0 as Uint<64>;
+}
+
+export circuit claim_vault(provided_secret: Bytes<32>): Boolean {
+    assert(!vault_claimed, "Vault has already been claimed");
+    assert(persistentHash<Bytes<32>>(provided_secret) == secret_hash, "Invalid secret passcode");
+    
+    vault_claimed = disclose(true);
+    total_claims = disclose((total_claims + (1 as Uint<64>)) as Uint<64>);
+    return true;
+}
