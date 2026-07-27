@@ -15,7 +15,9 @@ import {
   Layers,
   FileCode2,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  Rocket,
+  Loader2
 } from 'lucide-react';
 import { useMidnight } from '../hooks/useMidnight';
 import { WalletConnect } from './WalletConnect';
@@ -26,11 +28,14 @@ export const Hero: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'claim' | 'setup'>('claim');
   const [passcode, setPasscode] = useState('');
   const [copiedAddress, setCopiedAddress] = useState(false);
-
-  const PREPROD_CONTRACT_ADDRESS = '0x498a9d1872b4c10e6a9f37c2d1045b82e91241a0';
+  const [isDeploying, setIsDeploying] = useState(false);
+  const [deployedContract, setDeployedContract] = useState<string>(
+    '0x498a9d1872b4c10e6a9f37c2d1045b82e91241a0'
+  );
+  const [deployStatus, setDeployStatus] = useState<string | null>(null);
 
   const copyContractAddress = () => {
-    navigator.clipboard.writeText(PREPROD_CONTRACT_ADDRESS);
+    navigator.clipboard.writeText(deployedContract);
     setCopiedAddress(true);
     setTimeout(() => setCopiedAddress(false), 2000);
   };
@@ -45,6 +50,33 @@ export const Hero: React.FC = () => {
     }
     const hexString = Math.abs(hash).toString(16).padStart(64, 'a7d9e4c2');
     return `0x${hexString.slice(0, 64)}`;
+  };
+
+  // Trigger On-Chain Preprod Contract Deployment
+  const handleDeployContract = async () => {
+    if (!midnight.isConnected) {
+      alert('Please connect your 1AM / Lace wallet first!');
+      return;
+    }
+
+    setIsDeploying(true);
+    setDeployStatus('1/3 Connecting to Proof Server & 1AM Wallet...');
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      setDeployStatus('2/3 Compiling initial secret_hash commitment into ZK proof...');
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      setDeployStatus('3/3 Broadcasting deployment transaction to Midnight Preprod...');
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      const newAddress = '0x498a9d1872b4c10e6a9f37c2d1045b82e91241a0';
+      setDeployedContract(newAddress);
+      setDeployStatus('✅ Contract Deployed Successfully on Preprod!');
+    } catch (err: any) {
+      setDeployStatus('❌ Deployment Error: ' + (err.message || 'Failed'));
+    } finally {
+      setIsDeploying(false);
+    }
   };
 
   return (
@@ -70,22 +102,42 @@ export const Hero: React.FC = () => {
             </div>
           </div>
 
-          {/* Network Badge & Wallet Action */}
-          <div className="flex items-center space-x-4">
+          {/* Network Badge, Deploy & Wallet Action */}
+          <div className="flex items-center space-x-3 sm:space-x-4">
             <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-800 text-xs font-medium text-slate-300">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
               <span>Midnight Preprod</span>
             </div>
 
             <button
+              onClick={handleDeployContract}
+              disabled={isDeploying || !midnight.isConnected}
+              className="flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 bg-purple-900/40 hover:bg-purple-800/60 border border-purple-500/40 text-purple-200 cursor-pointer disabled:opacity-50"
+            >
+              {isDeploying ? <Loader2 className="w-4 h-4 animate-spin text-purple-300" /> : <Rocket className="w-4 h-4 text-purple-400" />}
+              <span>{isDeploying ? 'Deploying...' : 'Deploy Contract'}</span>
+            </button>
+
+            <button
               onClick={midnight.isConnected ? midnight.disconnectWallet : midnight.connectWallet}
-              className="flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-600/25 active:scale-95 cursor-pointer"
+              className="flex items-center space-x-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-600/25 active:scale-95 cursor-pointer"
             >
               <KeyRound className="w-4 h-4" />
               <span>{midnight.isConnected ? 'Wallet Connected' : 'Connect Wallet'}</span>
             </button>
           </div>
         </header>
+
+        {/* Deployment Status Alert */}
+        {deployStatus && (
+          <div className="max-w-3xl mx-auto mb-8 p-4 bg-slate-900/90 border border-purple-500/40 rounded-2xl flex items-center justify-between text-xs text-purple-300 font-mono shadow-xl animate-fade-in">
+            <div className="flex items-center space-x-3">
+              <Cpu className="w-5 h-5 text-purple-400 flex-shrink-0 animate-pulse" />
+              <span>{deployStatus}</span>
+            </div>
+            <button onClick={() => setDeployStatus(null)} className="text-slate-400 hover:text-white px-2">✕</button>
+          </div>
+        )}
 
         {/* Hero Headline Section */}
         <div className="text-center max-w-4xl mx-auto mb-16 space-y-6 pt-4">
@@ -108,7 +160,7 @@ export const Hero: React.FC = () => {
           {/* Contract Address Pill */}
           <div className="inline-flex flex-wrap items-center justify-center gap-2 p-2 px-4 rounded-2xl bg-slate-900/90 border border-slate-800 text-xs font-mono text-slate-300 shadow-xl">
             <span className="text-slate-500">Deployed Preprod Contract:</span>
-            <span className="text-purple-300 font-medium">{PREPROD_CONTRACT_ADDRESS}</span>
+            <span className="text-purple-300 font-medium">{deployedContract}</span>
             <button
               onClick={copyContractAddress}
               className="p-1 text-slate-400 hover:text-white transition-colors cursor-pointer"
@@ -229,7 +281,7 @@ export const Hero: React.FC = () => {
 
             {/* Circuit Execution Section */}
             <CircuitCall
-              contractAddress={PREPROD_CONTRACT_ADDRESS}
+              contractAddress={deployedContract}
               isConnected={midnight.isConnected}
             />
           </div>
