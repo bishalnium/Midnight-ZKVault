@@ -1,0 +1,8 @@
+{
+  "version": 3,
+  "file": "index.js",
+  "sourceRoot": "../../",
+  "sources": ["contract/zk_vault.compact", "compiler/standard-library.compact"],
+  "names": [],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;EAAA;;;;;;;;;;MAUA,AAAA,WAIC;;;;;cAJ0B,cAAuB;;;;;;;;;;;;;;;;;;yCAAvB,cAAuB;;;;;;;;;6CAAvB,cAAuB;;;OAIjD;MAED,AAAA,WAOC;;;;;cAP0B,iBAA0B;;;;;;;;;;;;;;;;;;yCAA1B,iBAA0B;;;;;;;;;6CAA1B,iBAA0B;;;OAOpD;;;;;;;;;;GACA;EAxBD;;;;;;;;;;;;;;;;;;;;;;;;;;;;;IAIA;;;;;;;;;yEAAqC;IACrC;;;;;;;;;yEAAqC;IACrC;;;;;;;;;yEAAqC;;;;;;;GAkBpC;ECxBD,AAAA,kBAAA;oEAAA;;;EDUA,AAAA,cAIC,4BAJ0B,cAAuB;IAC9C;;;;;;;2HAAuB,cAAY;;yEAAxB;IACX;;;;;;;;;yEAAa;UACb,KAAY;IAAZ;;;;;;;2HAAA,KAAY;;yEAAA;;GACf;EAED,AAAA,cAOC,4BAP0B,iBAA0B;qDACzC;;;;;;;;;;;0HAAa;;iEACY,iBAAe;kEAAK;;;;;;;;;;;uIAAW;;IAEhE;;;;;;;;;yEAAa;UACb,KAAY;;;;;6CAAa;;;;;;;;;;;kHAAY;;;IAArC;;;;;;;2HAAA,KAAY;;yEAAA;;GAEf;;;;;;;;;;;;;;;;;;;;IAnBD;qCAAA;;;;;;;;;;;0GAAqC;KAAA;IACrC;qCAAA;;;;;;;;;;;0GAAqC;KAAA;IACrC;qCAAA;;;;;;;;;;;0GAAqC;KAAA;;;;;;;;;;"
+}
