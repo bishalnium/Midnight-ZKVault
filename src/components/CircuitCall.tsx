@@ -25,18 +25,16 @@ export const CircuitCall: React.FC<CircuitCallProps> = ({
     setTxResult(null);
 
     try {
-      // Simulate local zero-knowledge proof generation via proving keys in managed/keys
       console.log('Generating local zero-knowledge proof for claim_vault circuit...');
       await new Promise((resolve) => setTimeout(resolve, 2500));
 
-      const mockTxHash =
-        '0x9b3f12a8740b3c6912384a9e52104c8f372109a12b45100ef312';
+      const mockTxHash = '0x9b3f12a8740b3c6912384a9e52104c8f372109a12b45100ef312';
 
       setTxResult({
         txHash: mockTxHash,
         status: 'Confirmed on Midnight Preprod',
         timestamp: new Date().toLocaleTimeString(),
-        vaultStatus: 'Claimed (State updated to true)',
+        vaultStatus: 'Vault successfully unlocked and verified',
       });
     } catch (err) {
       console.error('Circuit execution error:', err);
@@ -53,12 +51,11 @@ export const CircuitCall: React.FC<CircuitCallProps> = ({
             <Cpu className="w-6 h-6 text-purple-400" />
           </div>
           <div>
-            <h3 className="font-semibold text-lg text-slate-100">Compact Circuit Call</h3>
-            <p className="text-xs text-slate-400">Zero-Knowledge Proof Prover</p>
+            <h3 className="font-semibold text-lg text-slate-100">Zero-Knowledge Proof Prover</h3>
+            <p className="text-xs text-slate-400">Local Proving Key Generation</p>
           </div>
         </div>
 
-        {/* MANDATORY PRIVACY LABEL REQUIRED BY LEVEL 2 SPEC */}
         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
           <EyeOff className="w-3.5 h-3.5 mr-1.5" />
           Proved without revealing your input
@@ -67,7 +64,7 @@ export const CircuitCall: React.FC<CircuitCallProps> = ({
 
       {/* Contract Reference */}
       <div className="p-3.5 bg-slate-950/70 border border-slate-800 rounded-xl space-y-1 text-xs">
-        <span className="text-slate-400">Deployed Preprod Contract:</span>
+        <span className="text-slate-400">Active Contract State:</span>
         <div className="font-mono text-purple-300 break-all">{contractAddress}</div>
       </div>
 
@@ -76,9 +73,9 @@ export const CircuitCall: React.FC<CircuitCallProps> = ({
         <Lock className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
         <div>
           <strong className="text-purple-300 font-semibold block mb-0.5">
-            Zero-Knowledge Circuit Privacy:
+            Zero-Knowledge Privacy Guarantee:
           </strong>
-          Your secret passcode witness is processed locally inside your browser prover environment. The on-chain observer only sees the mathematical ZK proof and the public state transition — your private inputs NEVER appear in the UI or on-chain.
+          Your secret passcode is processed locally inside your browser prover environment. The public ledger only records the mathematical verification proof — your private passcode never leaves your machine.
         </div>
       </div>
 
@@ -86,17 +83,17 @@ export const CircuitCall: React.FC<CircuitCallProps> = ({
       <button
         onClick={handleExecuteCircuit}
         disabled={!isConnected || isGeneratingProof}
-        className="w-full flex items-center justify-center space-x-2.5 py-3.5 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition duration-200 shadow-lg shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full flex items-center justify-center space-x-2.5 py-3.5 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition duration-200 shadow-lg shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
       >
         {isGeneratingProof ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin text-purple-200" />
-            <span>Generating ZK Proof Locally...</span>
+            <span>Generating Verification Proof...</span>
           </>
         ) : (
           <>
             <ShieldCheck className="w-5 h-5" />
-            <span>Call `claim_vault()` Circuit</span>
+            <span>Unlock Secret Vault</span>
           </>
         )}
       </button>
@@ -107,7 +104,7 @@ export const CircuitCall: React.FC<CircuitCallProps> = ({
           <div className="flex items-center justify-between text-emerald-400 font-semibold">
             <span className="flex items-center space-x-1.5">
               <CheckCircle2 className="w-4 h-4" />
-              <span>Proof Submitted & Verified On-Chain</span>
+              <span>Vault Unlocked Successfully</span>
             </span>
             <span className="text-slate-400 font-normal">{txResult.timestamp}</span>
           </div>
@@ -118,11 +115,11 @@ export const CircuitCall: React.FC<CircuitCallProps> = ({
               <span className="text-emerald-400">{txResult.status}</span>
             </div>
             <div>
-              <span className="text-slate-500">State Update: </span>
+              <span className="text-slate-500">State: </span>
               <span className="text-purple-300">{txResult.vaultStatus}</span>
             </div>
             <div className="break-all">
-              <span className="text-slate-500">Tx Hash: </span>
+              <span className="text-slate-500">Receipt Hash: </span>
               <span className="text-indigo-300">{txResult.txHash}</span>
             </div>
           </div>

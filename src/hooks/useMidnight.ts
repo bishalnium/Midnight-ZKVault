@@ -19,12 +19,11 @@ export function useMidnight() {
     error: null,
   });
 
-  // Prioritize Lace Wallet on window object
   const checkWalletInstalled = useCallback(() => {
     if (typeof window === 'undefined') return false;
     const globalObj = window as any;
     const m = globalObj.midnight;
-    return !!(m?.lace || m?.mnLace || globalObj.cardano?.lace || m?.['1AM'] || m?.['1am']);
+    return !!(m?.lace || m?.mnLace || globalObj.cardano?.lace);
   }, []);
 
   const connectWallet = async () => {
@@ -35,21 +34,12 @@ export function useMidnight() {
       const globalObj = window as any;
       const m = globalObj.midnight;
 
-      // Target Lace Wallet provider first
-      const walletProvider =
-        m?.lace || m?.mnLace || globalObj.cardano?.lace || m?.['1AM'] || m?.['1am'];
-
-      const detectedName = (m?.lace || m?.mnLace || globalObj.cardano?.lace)
-        ? 'Lace Wallet'
-        : '1AM Wallet';
+      const walletProvider = m?.lace || m?.mnLace || globalObj.cardano?.lace;
 
       if (!walletProvider) {
-        throw new Error(
-          'Lace Wallet extension is not installed in your browser. Please ensure the extension is enabled.'
-        );
+        throw new Error('Lace Wallet extension is not installed or enabled in your browser.');
       }
 
-      // Connect API call
       let api: any = null;
       if (typeof walletProvider.connect === 'function') {
         api = await walletProvider.connect('preprod');
@@ -58,29 +48,29 @@ export function useMidnight() {
       }
 
       const state = api ? await api.state?.().catch(() => null) : null;
-      const address =
-        state?.unshieldedAddress ||
-        state?.address ||
-        'mn_addr_preprod1gyrrs8h74m3c34jxhy86ne...';
+      const address = state?.unshieldedAddress || state?.address || null;
+
+      if (!address) {
+        throw new Error('Could not retrieve address from connected wallet.');
+      }
 
       setWalletState({
         isConnected: true,
         isConnecting: false,
         address: address,
         network: 'Midnight Preprod',
-        walletName: detectedName,
+        walletName: 'Lace Wallet',
         error: null,
       });
     } catch (err: any) {
-      console.warn('Lace Wallet connection handling:', err.message);
-
+      console.warn('Lace Wallet connection failed:', err.message);
       setWalletState({
-        isConnected: true,
+        isConnected: false,
         isConnecting: false,
-        address: 'mn_addr_preprod1gyrrs8h74m3c34jxhy86ne...',
-        network: 'Midnight Preprod',
-        walletName: 'Lace Wallet',
-        error: err.message.includes('not installed') ? err.message : null,
+        address: null,
+        network: null,
+        walletName: null,
+        error: err.message,
       });
     }
   };
