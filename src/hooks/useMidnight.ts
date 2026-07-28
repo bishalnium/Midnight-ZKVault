@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 export interface WalletState {
   isConnected: boolean;
@@ -7,6 +7,33 @@ export interface WalletState {
   network: string | null;
   walletName: string | null;
   error: string | null;
+}
+
+/**
+ * Discover the first available Midnight wallet from window.midnight.
+ * Lace injects under dynamic UUID keys, NOT fixed names like 'mnLace'.
+ * We must enumerate Object.values(window.midnight) to find it.
+ */
+function discoverWallet(): { provider: any; name: string } | null {
+  if (typeof window === 'undefined') return null;
+  const globalObj = window as any;
+  const m = globalObj.midnight;
+
+  if (!m || typeof m !== 'object') return null;
+
+  // Enumerate all injected wallet providers
+  const entries = Object.entries(m);
+  for (const [key, value] of entries) {
+    if (value && typeof value === 'object') {
+      const v = value as any;
+      // A valid wallet provider will have enable() or connect()
+      if (typeof v.enable === 'function' || typeof v.connect === 'function') {
+        const name = v.name || v.walletName || (key.includes('lace') ? 'Lace Wallet' : `Midnight Wallet (${key.slice(0, 8)})`);
+        return { provider: v, name };
+      }
+    }
+  }
+  return null;
 }
 
 export function useMidnight() {
@@ -19,62 +46,88 @@ export function useMidnight() {
     error: null,
   });
 
+  const [walletDetected, setWalletDetected] = useState(false);
+
+  // Poll for wallet injection (extensions can inject after page load)
+  useEffect(() => {
+    const check = () => {
+      const found = discoverWallet();
+      if (found) {
+        setWalletDetected(true);
+        console.log(`[ZKVault] Detected wallet: ${found.name}`);
+      }
+    };
+
+    // Check immediately
+    check();
+
+    // Re-check every 500ms for up to 5 seconds (extension may load late)
+    const interval = setInterval(check, 500);
+    const timeout = setTimeout(() => clearInterval(interval), 5000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, []);
+
   const checkWalletInstalled = useCallback(() => {
-    if (typeof window === 'undefined') return false;
-    const globalObj = window as any;
-    const m = globalObj.midnight;
-    return !!(m?.mnLace || m?.lace || globalObj.cardano?.lace || m?.['1AM'] || m?.['1am']);
+    return discoverWallet() !== null;
   }, []);
 
   const connectWallet = async () => {
     setWalletState((prev) => ({ ...prev, isConnecting: true, error: null }));
 
     try {
-      if (typeof window === 'undefined') throw new Error('Browser window not found');
-      const globalObj = window as any;
-      const m = globalObj.midnight;
+      const wallet = discoverWallet();
 
-      // Prioritize mnLace (standard injection key for Lace Midnight)
-      const walletProvider = m?.mnLace || m?.lace || globalObj.cardano?.lace || m?.['1AM'] || m?.['1am'];
-
-      const detectedName = (m?.mnLace || m?.lace || globalObj.cardano?.lace)
-        ? 'Lace Wallet'
-        : '1AM Wallet';
-
-      if (!walletProvider) {
-        throw new Error('Lace Wallet extension is not installed or enabled in your browser.');
+      if (!wallet) {
+        throw new Error(
+          'No Midnight wallet detected. Please ensure Lace Wallet is installed, unlocked, and set to Midnight Preprod network, then refresh this page.'
+        );
       }
 
-      console.log('Attempting to connect to wallet provider:', detectedName);
+      console.log(`[ZKVault] Connecting to ${wallet.name}...`);
 
       let api: any = null;
-      if (typeof walletProvider.enable === 'function') {
-        api = await walletProvider.enable();
-      } else if (typeof walletProvider.connect === 'function') {
-        api = await walletProvider.connect('preprod');
+
+      // Lace uses .enable() to trigger the authorization popup
+      if (typeof wallet.provider.enable === 'function') {
+        api = await wallet.provider.enable();
+      } else if (typeof wallet.provider.connect === 'function') {
+        api = await wallet.provider.connect('preprod');
       }
 
       if (!api) {
-        throw new Error('Wallet connection rejected by user.');
+        throw new Error('Wallet connection was rejected or returned no API.');
       }
 
-      const state = api ? await api.state?.().catch(() => null) : null;
-      const address = state?.unshieldedAddress || state?.address || null;
+      console.log('[ZKVault] Wallet API obtained, fetching state...');
 
-      if (!address) {
-        throw new Error('Could not retrieve address from connected wallet.');
+      // Retrieve wallet state (address, balances)
+      let address: string | null = null;
+      if (typeof api.state === 'function') {
+        const state = await api.state().catch(() => null);
+        address = state?.unshieldedAddress || state?.address || null;
+      }
+
+      if (!address && typeof api.getUsedAddresses === 'function') {
+        const addrs = await api.getUsedAddresses().catch(() => []);
+        address = addrs?.[0] || null;
       }
 
       setWalletState({
         isConnected: true,
         isConnecting: false,
-        address: address,
+        address: address || 'Connected (address pending sync)',
         network: 'Midnight Preprod',
-        walletName: detectedName,
+        walletName: wallet.name,
         error: null,
       });
+
+      console.log(`[ZKVault] Connected! Address: ${address}`);
     } catch (err: any) {
-      console.error('Wallet connection failed:', err.message);
+      console.error('[ZKVault] Wallet connection failed:', err.message);
       setWalletState({
         isConnected: false,
         isConnecting: false,
@@ -99,7 +152,7 @@ export function useMidnight() {
 
   return {
     ...walletState,
-    isInstalled: checkWalletInstalled(),
+    isInstalled: walletDetected || checkWalletInstalled(),
     connectWallet,
     disconnectWallet,
   };
