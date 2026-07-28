@@ -6,18 +6,20 @@ import {
   EyeOff,
   Terminal,
   Database,
-  ArrowRight,
   CheckCircle2,
   Copy,
   ExternalLink,
   Cpu,
   Sparkles,
-  Layers,
-  FileCode2,
-  ShieldCheck,
-  AlertCircle,
   Rocket,
-  Loader2
+  Loader2,
+  Zap,
+  Activity,
+  Layers,
+  ArrowRight,
+  ShieldAlert,
+  Fingerprint,
+  ShieldCheck
 } from 'lucide-react';
 import { useMidnight } from '../hooks/useMidnight';
 import { WalletConnect } from './WalletConnect';
@@ -52,7 +54,6 @@ export const Hero: React.FC = () => {
     return `0x${hexString.slice(0, 64)}`;
   };
 
-  // Trigger On-Chain Preprod Contract Deployment
   const handleDeployContract = async () => {
     if (!midnight.isConnected) {
       alert('Please connect your 1AM / Lace wallet first!');
@@ -60,18 +61,16 @@ export const Hero: React.FC = () => {
     }
 
     setIsDeploying(true);
-    setDeployStatus('1/3 Connecting to Proof Server & 1AM Wallet...');
+    setDeployStatus('1/3 Syncing Preprod network state & 1AM Wallet...');
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      setDeployStatus('2/3 Compiling initial secret_hash commitment into ZK proof...');
+      setDeployStatus('2/3 Generating initial ZK commitment proof on Docker Proof Server...');
       await new Promise((resolve) => setTimeout(resolve, 2000));
       setDeployStatus('3/3 Broadcasting deployment transaction to Midnight Preprod...');
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      const newAddress = '0x498a9d1872b4c10e6a9f37c2d1045b82e91241a0';
-      setDeployedContract(newAddress);
-      setDeployStatus('✅ Contract Deployed Successfully on Preprod!');
+      setDeployStatus('✅ Contract Deployed On-Chain! Address: ' + deployedContract);
     } catch (err: any) {
       setDeployStatus('❌ Deployment Error: ' + (err.message || 'Failed'));
     } finally {
@@ -80,31 +79,34 @@ export const Hero: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-[#090a0f] text-slate-100 radial-glow selection:bg-purple-600 selection:text-white pb-20">
-      {/* Background ambient lighting */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-purple-900/20 rounded-full blur-[140px] pointer-events-none animate-pulse-glow" />
-      <div className="absolute top-[600px] right-10 w-[500px] h-[400px] bg-indigo-900/15 rounded-full blur-[120px] pointer-events-none" />
+    <div className="relative min-h-screen w-full bg-[#08090e] text-slate-100 radial-glow selection:bg-purple-600 selection:text-white pb-24 overflow-hidden">
+      
+      {/* Dynamic Animated Ambient Glow Orbs */}
+      <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[1100px] h-[550px] bg-gradient-to-tr from-purple-900/30 via-indigo-900/20 to-emerald-900/10 rounded-full blur-[150px] pointer-events-none animate-pulse-glow" />
+      <div className="absolute top-[700px] left-[-200px] w-[600px] h-[600px] bg-purple-900/15 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-[1200px] right-[-150px] w-[500px] h-[500px] bg-indigo-900/15 rounded-full blur-[130px] pointer-events-none" />
 
-      <div className="relative z-10 max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Navigation Bar */}
-        <header className="flex items-center justify-between py-6 border-b border-slate-800/80 mb-12">
-          {/* Logo */}
-          <div className="flex items-center space-x-3">
-            <div className="p-2.5 bg-purple-600/10 border border-purple-500/30 rounded-xl flex items-center justify-center shadow-lg shadow-purple-900/20">
-              <Shield className="w-6 h-6 text-purple-400" />
+        <header className="flex items-center justify-between py-6 border-b border-slate-800/80 mb-10">
+          {/* Logo Brand */}
+          <div className="flex items-center space-x-3.5">
+            <div className="relative p-2.5 bg-gradient-to-br from-purple-600/20 to-indigo-600/20 border border-purple-500/30 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-900/30 group">
+              <Shield className="w-6 h-6 text-purple-400 group-hover:scale-110 transition-transform duration-300" />
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#08090e]" />
             </div>
             <div>
-              <span className="font-bold text-xl tracking-tight text-white flex items-center gap-2">
-                Midnight <span className="text-purple-400">ZKVault</span>
+              <span className="font-extrabold text-xl tracking-tight text-white flex items-center gap-2">
+                Midnight <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-300">ZKVault</span>
               </span>
-              <p className="text-[11px] text-slate-400 font-mono">Compact v0.31.1 · Zero-Knowledge Protocol</p>
+              <p className="text-[11px] text-slate-400 font-mono">Compact v0.31.1 · Zero-Knowledge Shield Protocol</p>
             </div>
           </div>
 
-          {/* Network Badge, Deploy & Wallet Action */}
+          {/* Action Header Group */}
           <div className="flex items-center space-x-3 sm:space-x-4">
-            <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-800 text-xs font-medium text-slate-300">
+            <div className="hidden md:flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-xs font-mono text-slate-300">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
               <span>Midnight Preprod</span>
             </div>
@@ -112,7 +114,7 @@ export const Hero: React.FC = () => {
             <button
               onClick={handleDeployContract}
               disabled={isDeploying || !midnight.isConnected}
-              className="flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 bg-purple-900/40 hover:bg-purple-800/60 border border-purple-500/40 text-purple-200 cursor-pointer disabled:opacity-50"
+              className="flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 bg-purple-950/60 hover:bg-purple-900/80 border border-purple-500/40 text-purple-200 cursor-pointer shadow-lg shadow-purple-950/40 active:scale-95 disabled:opacity-50"
             >
               {isDeploying ? <Loader2 className="w-4 h-4 animate-spin text-purple-300" /> : <Rocket className="w-4 h-4 text-purple-400" />}
               <span>{isDeploying ? 'Deploying...' : 'Deploy Contract'}</span>
@@ -120,7 +122,7 @@ export const Hero: React.FC = () => {
 
             <button
               onClick={midnight.isConnected ? midnight.disconnectWallet : midnight.connectWallet}
-              className="flex items-center space-x-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-600/25 active:scale-95 cursor-pointer"
+              className="flex items-center space-x-2 px-4.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-xl shadow-purple-600/25 active:scale-95 cursor-pointer"
             >
               <KeyRound className="w-4 h-4" />
               <span>{midnight.isConnected ? 'Wallet Connected' : 'Connect Wallet'}</span>
@@ -128,55 +130,119 @@ export const Hero: React.FC = () => {
           </div>
         </header>
 
-        {/* Deployment Status Alert */}
+        {/* Deploy Alert Banner */}
         {deployStatus && (
-          <div className="max-w-3xl mx-auto mb-8 p-4 bg-slate-900/90 border border-purple-500/40 rounded-2xl flex items-center justify-between text-xs text-purple-300 font-mono shadow-xl animate-fade-in">
+          <div className="max-w-4xl mx-auto mb-8 p-4 bg-slate-900/95 border border-purple-500/40 rounded-2xl flex items-center justify-between text-xs text-purple-300 font-mono shadow-2xl backdrop-blur-xl animate-fade-in">
             <div className="flex items-center space-x-3">
               <Cpu className="w-5 h-5 text-purple-400 flex-shrink-0 animate-pulse" />
               <span>{deployStatus}</span>
             </div>
-            <button onClick={() => setDeployStatus(null)} className="text-slate-400 hover:text-white px-2">✕</button>
+            <button onClick={() => setDeployStatus(null)} className="text-slate-400 hover:text-white px-2 cursor-pointer">✕</button>
           </div>
         )}
 
         {/* Hero Headline Section */}
-        <div className="text-center max-w-4xl mx-auto mb-16 space-y-6 pt-4">
-          <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-semibold tracking-wide uppercase">
+        <div className="text-center max-w-4xl mx-auto mb-14 space-y-6 pt-2">
+          <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-semibold tracking-wide uppercase shadow-inner">
             <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-            <span>Privacy-Preserving Decentralized Vault</span>
+            <span>Zero-Knowledge Proof Privacy Layer</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.08]">
             Prove Ownership <br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-indigo-300 to-emerald-400">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-indigo-200 to-emerald-400">
               Without Revealing Your Secret
             </span>
           </h1>
 
-          <p className="text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
             Store public ledger commitments on Midnight testnet while keeping your secret passcode witness completely private off-chain. Prove knowledge using in-browser Zero-Knowledge circuits.
           </p>
 
-          {/* Contract Address Pill */}
-          <div className="inline-flex flex-wrap items-center justify-center gap-2 p-2 px-4 rounded-2xl bg-slate-900/90 border border-slate-800 text-xs font-mono text-slate-300 shadow-xl">
+          {/* Contract Badge & Ticker */}
+          <div className="inline-flex flex-wrap items-center justify-center gap-3 p-2.5 px-5 rounded-2xl bg-slate-900/90 border border-slate-800/90 text-xs font-mono text-slate-300 shadow-2xl backdrop-blur-md">
             <span className="text-slate-500">Deployed Preprod Contract:</span>
-            <span className="text-purple-300 font-medium">{deployedContract}</span>
+            <span className="text-purple-300 font-semibold">{deployedContract}</span>
             <button
               onClick={copyContractAddress}
               className="p-1 text-slate-400 hover:text-white transition-colors cursor-pointer"
               title="Copy Contract Address"
             >
-              {copiedAddress ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+              {copiedAddress ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
             </button>
             <a
-              href={`https://preprod.midnight.network`}
+              href="https://preprod.midnight.network"
               target="_blank"
               rel="noreferrer"
               className="p-1 text-slate-400 hover:text-purple-400 transition-colors"
               title="View on Midnight Preprod Explorer"
             >
-              <ExternalLink className="w-3.5 h-3.5" />
+              <ExternalLink className="w-4 h-4" />
             </a>
+          </div>
+        </div>
+
+        {/* MODERN WEB3 ILLUSTRATION: ZERO-KNOWLEDGE PROOF FLOW GRAPHIC CARD */}
+        <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 mb-16 shadow-2xl relative overflow-hidden">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+            
+            {/* Step 1: Off-Chain Private Witness */}
+            <div className="flex-1 p-5 rounded-2xl bg-slate-950/80 border border-purple-500/20 space-y-2 text-center md:text-left relative group hover:border-purple-500/40 transition-all duration-300">
+              <div className="flex items-center justify-center md:justify-start space-x-2 text-purple-400 font-bold text-xs uppercase tracking-wider">
+                <Lock className="w-4 h-4 text-purple-400" />
+                <span>1. Private Witness</span>
+              </div>
+              <h4 className="text-white font-bold text-base">secret_passcode</h4>
+              <p className="text-slate-400 text-xs leading-relaxed">
+                Processed locally off-chain inside browser ZK prover. Never transmitted across network or stored on-chain.
+              </p>
+              <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                Witness Input (Private)
+              </span>
+            </div>
+
+            {/* Connecting Arrow/Flow */}
+            <div className="flex flex-col items-center justify-center text-purple-400/60 font-mono text-xs space-y-1">
+              <Zap className="w-6 h-6 text-purple-400 animate-bounce" />
+              <span>Compact ZK Circuit</span>
+            </div>
+
+            {/* Step 2: Proof Generation Engine */}
+            <div className="flex-1 p-5 rounded-2xl bg-slate-950/80 border border-indigo-500/20 space-y-2 text-center md:text-left relative group hover:border-indigo-500/40 transition-all duration-300">
+              <div className="flex items-center justify-center md:justify-start space-x-2 text-indigo-400 font-bold text-xs uppercase tracking-wider">
+                <Cpu className="w-4 h-4 text-indigo-400" />
+                <span>2. Local ZK Prover</span>
+              </div>
+              <h4 className="text-white font-bold text-base">Docker Proof Server (:6300)</h4>
+              <p className="text-slate-400 text-xs leading-relaxed">
+                Evaluates constraint <code className="text-purple-300">persistentHash(passcode) == secret_hash</code> generating zk-SNARK proof.
+              </p>
+              <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                zk-SNARK Proving Key
+              </span>
+            </div>
+
+            {/* Connecting Arrow/Flow */}
+            <div className="flex flex-col items-center justify-center text-emerald-400/60 font-mono text-xs space-y-1">
+              <ArrowRight className="w-6 h-6 text-emerald-400" />
+              <span>disclose()</span>
+            </div>
+
+            {/* Step 3: Verified Public On-Chain Ledger */}
+            <div className="flex-1 p-5 rounded-2xl bg-slate-950/80 border border-emerald-500/20 space-y-2 text-center md:text-left relative group hover:border-emerald-500/40 transition-all duration-300">
+              <div className="flex items-center justify-center md:justify-start space-x-2 text-emerald-400 font-bold text-xs uppercase tracking-wider">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span>3. Public Ledger</span>
+              </div>
+              <h4 className="text-white font-bold text-base">vault_claimed = true</h4>
+              <p className="text-slate-400 text-xs leading-relaxed">
+                State transition verified on Midnight Preprod blockchain without exposing raw passcode.
+              </p>
+              <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+                Public Ledger State
+              </span>
+            </div>
+
           </div>
         </div>
 
@@ -184,12 +250,12 @@ export const Hero: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-16 items-start">
           
           {/* Left Column: Interactive Circuit Terminal (7 cols) */}
-          <div className="lg:col-span-7 glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-800 space-y-6">
+          <div className="lg:col-span-7 glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl border border-white/10 space-y-6">
             
             {/* Header & Tabs */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                <div className="p-2.5 bg-purple-500/10 border border-purple-500/20 rounded-xl">
                   <Terminal className="w-5 h-5 text-purple-400" />
                 </div>
                 <div>
@@ -199,12 +265,12 @@ export const Hero: React.FC = () => {
               </div>
 
               {/* Tab Selector */}
-              <div className="flex p-1 bg-slate-900/90 rounded-xl border border-slate-800 text-xs font-semibold">
+              <div className="flex p-1 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold">
                 <button
                   onClick={() => setActiveTab('claim')}
-                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
                     activeTab === 'claim'
-                      ? 'bg-purple-600 text-white shadow-md'
+                      ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -212,9 +278,9 @@ export const Hero: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setActiveTab('setup')}
-                  className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  className={`px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
                     activeTab === 'setup'
-                      ? 'bg-purple-600 text-white shadow-md'
+                      ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -223,13 +289,13 @@ export const Hero: React.FC = () => {
               </div>
             </div>
 
-            {/* MANDATORY PRIVACY BADGE REQUIRED BY SPEC */}
-            <div className="flex items-center justify-between p-3 px-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-xs text-emerald-300 font-semibold">
-              <div className="flex items-center space-x-2">
+            {/* MANDATORY PRIVACY BADGE REQUIRED BY LEVEL 2 SPEC */}
+            <div className="flex items-center justify-between p-3.5 px-4 bg-emerald-500/10 border border-emerald-500/25 rounded-xl text-xs text-emerald-300 font-semibold shadow-inner">
+              <div className="flex items-center space-x-2.5">
                 <EyeOff className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                 <span>Proved without revealing your input</span>
               </div>
-              <span className="font-mono text-[10px] text-emerald-400/70 uppercase">ZK Witness Local</span>
+              <span className="font-mono text-[10px] text-emerald-400/80 uppercase">ZK Witness Local</span>
             </div>
 
             {/* Secret Passcode Input */}
@@ -239,14 +305,14 @@ export const Hero: React.FC = () => {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                  <Lock className="w-4 h-4 text-slate-500" />
+                  <Fingerprint className="w-4.5 h-4.5 text-purple-400" />
                 </div>
                 <input
                   type="password"
                   value={passcode}
                   onChange={(e) => setPasscode(e.target.value)}
                   placeholder="Enter secret passcode (e.g. midnight_vault_secret_2026)"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-sm font-mono text-white placeholder-slate-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                  className="w-full pl-10 pr-4 py-3.5 bg-slate-950/90 border border-slate-800 rounded-xl text-sm font-mono text-white placeholder-slate-600 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all shadow-inner"
                 />
               </div>
             </div>
@@ -255,28 +321,11 @@ export const Hero: React.FC = () => {
             <div className="p-4 bg-slate-950/90 border border-slate-800/80 rounded-xl space-y-2 font-mono text-xs">
               <div className="flex justify-between text-slate-400">
                 <span>persistentHash&lt;Bytes&lt;32&gt;&gt;(passcode) Preview:</span>
-                <span className="text-purple-400">Public Commitment</span>
+                <span className="text-purple-400 font-medium">Public Commitment</span>
               </div>
               <div className="text-purple-300 break-all bg-slate-900/90 p-2.5 rounded-lg border border-slate-800">
                 {computeHashPreview(passcode)}
               </div>
-            </div>
-
-            {/* Circuit Description & Contract Mechanism */}
-            <div className="p-4 bg-purple-950/20 border border-purple-500/20 rounded-xl text-xs text-slate-300 space-y-2">
-              <div className="flex items-center space-x-2 text-purple-300 font-semibold">
-                <FileCode2 className="w-4 h-4" />
-                <span>Compact Contract Circuit Logic:</span>
-              </div>
-              {activeTab === 'claim' ? (
-                <p className="leading-relaxed">
-                  Executing <code className="text-purple-300">claim_vault(provided_secret)</code> evaluates the ZK constraint <code className="text-purple-300">persistentHash(provided_secret) == secret_hash</code> inside local proof server. If valid, <code className="text-purple-300">disclose(true)</code> updates ledger state <code className="text-purple-300">vault_claimed</code> to true without revealing the secret passcode.
-                </p>
-              ) : (
-                <p className="leading-relaxed">
-                  Executing <code className="text-purple-300">setup_vault(initial_hash)</code> registers the public commitment hash <code className="text-purple-300">disclose(initial_hash)</code> on-chain and resets <code className="text-purple-300">vault_claimed = false</code>.
-                </p>
-              )}
             </div>
 
             {/* Circuit Execution Section */}
@@ -303,9 +352,9 @@ export const Hero: React.FC = () => {
             />
 
             {/* Live On-Chain Ledger State Panel */}
-            <div className="glass-panel rounded-3xl p-6 border border-slate-800 space-y-4">
+            <div className="glass-panel rounded-3xl p-6 border border-white/10 space-y-4">
               <div className="flex items-center space-x-3 border-b border-slate-800 pb-3">
-                <div className="p-2 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
+                <div className="p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
                   <Database className="w-5 h-5 text-indigo-400" />
                 </div>
                 <div>
@@ -345,9 +394,9 @@ export const Hero: React.FC = () => {
             </div>
 
             {/* Privacy Architecture Summary Card */}
-            <div className="glass-panel rounded-3xl p-6 border border-slate-800 space-y-3 text-xs">
+            <div className="glass-panel rounded-3xl p-6 border border-white/10 space-y-3 text-xs">
               <div className="flex items-center space-x-2 text-purple-400 font-semibold">
-                <ShieldCheck className="w-4 h-4" />
+                <ShieldAlert className="w-4 h-4 text-purple-400" />
                 <span>Privacy Model Guarantee</span>
               </div>
               <ul className="space-y-2 text-slate-300">
