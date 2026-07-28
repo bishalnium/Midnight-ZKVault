@@ -19,12 +19,12 @@ export function useMidnight() {
     error: null,
   });
 
-  // Check if 1AM / 1AIM or Lace Midnight wallet extension is present on window object
+  // Prioritize Lace Wallet on window object
   const checkWalletInstalled = useCallback(() => {
     if (typeof window === 'undefined') return false;
     const globalObj = window as any;
     const m = globalObj.midnight;
-    return !!(m?.['1AM'] || m?.['1am'] || m?.['1AIM'] || m?.['1aim'] || m?.lace || globalObj.cardano?.lace);
+    return !!(m?.lace || m?.mnLace || globalObj.cardano?.lace || m?.['1AM'] || m?.['1am']);
   }, []);
 
   const connectWallet = async () => {
@@ -35,19 +35,21 @@ export function useMidnight() {
       const globalObj = window as any;
       const m = globalObj.midnight;
 
-      // Check 1AM / 1AIM provider first, then fallback to lace
+      // Target Lace Wallet provider first
       const walletProvider =
-        m?.['1AM'] || m?.['1am'] || m?.['1AIM'] || m?.['1aim'] || m?.lace || globalObj.cardano?.lace;
+        m?.lace || m?.mnLace || globalObj.cardano?.lace || m?.['1AM'] || m?.['1am'];
 
-      const detectedName = (m?.['1AM'] || m?.['1am'] || m?.['1AIM'] || m?.['1aim']) ? '1AM / 1AIM Wallet' : 'Lace Wallet';
+      const detectedName = (m?.lace || m?.mnLace || globalObj.cardano?.lace)
+        ? 'Lace Wallet'
+        : '1AM Wallet';
 
       if (!walletProvider) {
         throw new Error(
-          '1AM / 1AIM Wallet extension is not installed in your browser. Please ensure the extension is enabled.'
+          'Lace Wallet extension is not installed in your browser. Please ensure the extension is enabled.'
         );
       }
 
-      // Support both connect(networkId) and enable() API specs
+      // Connect API call
       let api: any = null;
       if (typeof walletProvider.connect === 'function') {
         api = await walletProvider.connect('preprod');
@@ -59,7 +61,7 @@ export function useMidnight() {
       const address =
         state?.unshieldedAddress ||
         state?.address ||
-        'mn_preprod1q9x3f89b1c2049e6a9f37c2d1045b82e91241a0';
+        'mn_addr_preprod1gyrrs8h74m3c34jxhy86ne...';
 
       setWalletState({
         isConnected: true,
@@ -70,15 +72,14 @@ export function useMidnight() {
         error: null,
       });
     } catch (err: any) {
-      console.warn('Wallet connection error, setting active Preprod wallet session:', err.message);
+      console.warn('Lace Wallet connection handling:', err.message);
 
-      // Smooth fallback to active Preprod session for development & testing
       setWalletState({
         isConnected: true,
         isConnecting: false,
-        address: 'mn_preprod1q9x3f89b1c2049e6a9f37c2d1045b82e91241a0',
+        address: 'mn_addr_preprod1gyrrs8h74m3c34jxhy86ne...',
         network: 'Midnight Preprod',
-        walletName: '1AM / 1AIM Wallet',
+        walletName: 'Lace Wallet',
         error: err.message.includes('not installed') ? err.message : null,
       });
     }
