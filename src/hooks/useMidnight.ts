@@ -23,7 +23,7 @@ export function useMidnight() {
     if (typeof window === 'undefined') return false;
     const globalObj = window as any;
     const m = globalObj.midnight;
-    return !!(m?.lace || m?.mnLace || globalObj.cardano?.lace);
+    return !!(m?.mnLace || m?.lace || globalObj.cardano?.lace || m?.['1AM'] || m?.['1am']);
   }, []);
 
   const connectWallet = async () => {
@@ -34,17 +34,28 @@ export function useMidnight() {
       const globalObj = window as any;
       const m = globalObj.midnight;
 
-      const walletProvider = m?.lace || m?.mnLace || globalObj.cardano?.lace;
+      // Prioritize mnLace (standard injection key for Lace Midnight)
+      const walletProvider = m?.mnLace || m?.lace || globalObj.cardano?.lace || m?.['1AM'] || m?.['1am'];
+
+      const detectedName = (m?.mnLace || m?.lace || globalObj.cardano?.lace)
+        ? 'Lace Wallet'
+        : '1AM Wallet';
 
       if (!walletProvider) {
         throw new Error('Lace Wallet extension is not installed or enabled in your browser.');
       }
 
+      console.log('Attempting to connect to wallet provider:', detectedName);
+
       let api: any = null;
-      if (typeof walletProvider.connect === 'function') {
-        api = await walletProvider.connect('preprod');
-      } else if (typeof walletProvider.enable === 'function') {
+      if (typeof walletProvider.enable === 'function') {
         api = await walletProvider.enable();
+      } else if (typeof walletProvider.connect === 'function') {
+        api = await walletProvider.connect('preprod');
+      }
+
+      if (!api) {
+        throw new Error('Wallet connection rejected by user.');
       }
 
       const state = api ? await api.state?.().catch(() => null) : null;
@@ -59,11 +70,11 @@ export function useMidnight() {
         isConnecting: false,
         address: address,
         network: 'Midnight Preprod',
-        walletName: 'Lace Wallet',
+        walletName: detectedName,
         error: null,
       });
     } catch (err: any) {
-      console.warn('Lace Wallet connection failed:', err.message);
+      console.error('Wallet connection failed:', err.message);
       setWalletState({
         isConnected: false,
         isConnecting: false,
