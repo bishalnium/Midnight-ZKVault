@@ -423,6 +423,7 @@ export const Hero: React.FC = () => {
             <CircuitCall
               contractAddress={deployedContract}
               isConnected={midnight.isConnected}
+              passcode={passcode}
             />
           </div>
 
