@@ -6,34 +6,54 @@ export interface WalletState {
   address: string | null;
   network: string | null;
   walletName: string | null;
+  activeWalletType: 'lace' | '1am' | null;
   error: string | null;
 }
 
+interface DiscoveredWallet {
+  provider: any;
+  name: string;
+  type: 'lace' | '1am';
+}
+
 /**
- * Discover the first available Midnight wallet from window.midnight.
- * Lace injects under dynamic UUID keys, NOT fixed names like 'mnLace'.
- * We must enumerate Object.values(window.midnight) to find it.
+ * Discover Midnight wallet providers from window.midnight.
+ * Supports both Lace Wallet and 1AM / 1AIM Wallet extensions.
  */
-function discoverWallet(): { provider: any; name: string } | null {
-  if (typeof window === 'undefined') return null;
+function discoverWallets(): { lace?: DiscoveredWallet; oneAm?: DiscoveredWallet; anyWallet?: DiscoveredWallet } {
+  if (typeof window === 'undefined') return {};
   const globalObj = window as any;
   const m = globalObj.midnight;
 
-  if (!m || typeof m !== 'object') return null;
+  if (!m || typeof m !== 'object') return {};
 
-  // Enumerate all injected wallet providers
   const entries = Object.entries(m);
+  let lace: DiscoveredWallet | undefined;
+  let oneAm: DiscoveredWallet | undefined;
+  let anyWallet: DiscoveredWallet | undefined;
+
   for (const [key, value] of entries) {
     if (value && typeof value === 'object') {
       const v = value as any;
-      // A valid wallet provider will have enable() or connect()
       if (typeof v.enable === 'function' || typeof v.connect === 'function') {
-        const name = v.name || v.walletName || (key.includes('lace') ? 'Lace Wallet' : `Midnight Wallet (${key.slice(0, 8)})`);
-        return { provider: v, name };
+        const keyLower = key.toLowerCase();
+        const nameLower = (v.name || v.walletName || '').toLowerCase();
+
+        const isLace = keyLower.includes('lace') || nameLower.includes('lace');
+        const is1Am = keyLower.includes('1am') || keyLower.includes('1aim') || nameLower.includes('1am') || nameLower.includes('1aim');
+
+        const type: 'lace' | '1am' = isLace ? 'lace' : is1Am ? '1am' : 'lace';
+        const name = v.name || v.walletName || (type === 'lace' ? 'Lace Wallet' : '1AM / 1AIM Wallet');
+
+        const walletObj = { provider: v, name, type };
+        if (!anyWallet) anyWallet = walletObj;
+        if (isLace && !lace) lace = walletObj;
+        if (is1Am && !oneAm) oneAm = walletObj;
       }
     }
   }
-  return null;
+
+  return { lace, oneAm, anyWallet };
 }
 
 export function useMidnight() {
@@ -43,25 +63,20 @@ export function useMidnight() {
     address: null,
     network: null,
     walletName: null,
+    activeWalletType: null,
     error: null,
   });
 
   const [walletDetected, setWalletDetected] = useState(false);
 
-  // Poll for wallet injection (extensions can inject after page load)
   useEffect(() => {
     const check = () => {
-      const found = discoverWallet();
-      if (found) {
+      const { anyWallet } = discoverWallets();
+      if (anyWallet) {
         setWalletDetected(true);
-        console.log(`[ZKVault] Detected wallet: ${found.name}`);
       }
     };
-
-    // Check immediately
     check();
-
-    // Re-check every 500ms for up to 5 seconds (extension may load late)
     const interval = setInterval(check, 500);
     const timeout = setTimeout(() => clearInterval(interval), 5000);
 
@@ -72,39 +87,45 @@ export function useMidnight() {
   }, []);
 
   const checkWalletInstalled = useCallback(() => {
-    return discoverWallet() !== null;
+    const { anyWallet } = discoverWallets();
+    return Boolean(anyWallet);
   }, []);
 
-  const connectWallet = async () => {
+  const connectWallet = async (targetType?: 'lace' | '1am') => {
     setWalletState((prev) => ({ ...prev, isConnecting: true, error: null }));
 
     try {
-      const wallet = discoverWallet();
+      const discovered = discoverWallets();
+      let walletToConnect: DiscoveredWallet | undefined;
 
-      if (!wallet) {
+      if (targetType === 'lace') {
+        walletToConnect = discovered.lace || (discovered.anyWallet?.type === 'lace' ? discovered.anyWallet : undefined);
+      } else if (targetType === '1am') {
+        walletToConnect = discovered.oneAm || (discovered.anyWallet?.type === '1am' ? discovered.anyWallet : undefined);
+      } else {
+        walletToConnect = discovered.anyWallet;
+      }
+
+      if (!walletToConnect) {
+        const requiredName = targetType === '1am' ? '1AM / 1AIM Wallet' : targetType === 'lace' ? 'Lace Wallet' : 'Midnight Wallet';
         throw new Error(
-          'No Midnight wallet detected. Please ensure Lace Wallet is installed, unlocked, and set to Midnight Preprod network, then refresh this page.'
+          `${requiredName} extension not detected. Please make sure the ${requiredName} browser extension is installed, unlocked, and configured for Midnight Preprod network, then refresh.`
         );
       }
 
-      console.log(`[ZKVault] Connecting to ${wallet.name}...`);
+      console.log(`[ZKVault] Connecting to ${walletToConnect.name}...`);
 
       let api: any = null;
-
-      // Lace uses .enable() to trigger the authorization popup
-      if (typeof wallet.provider.enable === 'function') {
-        api = await wallet.provider.enable();
-      } else if (typeof wallet.provider.connect === 'function') {
-        api = await wallet.provider.connect('preprod');
+      if (typeof walletToConnect.provider.enable === 'function') {
+        api = await walletToConnect.provider.enable();
+      } else if (typeof walletToConnect.provider.connect === 'function') {
+        api = await walletToConnect.provider.connect('preprod');
       }
 
       if (!api) {
-        throw new Error('Wallet connection was rejected or returned no API.');
+        throw new Error('Wallet connection was rejected or returned no API object.');
       }
 
-      console.log('[ZKVault] Wallet API obtained, fetching state...');
-
-      // Retrieve wallet state (address, balances)
       let address: string | null = null;
       if (typeof api.state === 'function') {
         const state = await api.state().catch(() => null);
@@ -121,19 +142,21 @@ export function useMidnight() {
         isConnecting: false,
         address: address || 'Connected (address pending sync)',
         network: 'Midnight Preprod',
-        walletName: wallet.name,
+        walletName: walletToConnect.name,
+        activeWalletType: walletToConnect.type,
         error: null,
       });
 
-      console.log(`[ZKVault] Connected! Address: ${address}`);
+      console.log(`[ZKVault] Connected ${walletToConnect.name}! Address: ${address}`);
     } catch (err: any) {
-      console.error('[ZKVault] Wallet connection failed:', err.message);
+      console.error('[ZKVault] Wallet connection error:', err.message);
       setWalletState({
         isConnected: false,
         isConnecting: false,
         address: null,
         network: null,
         walletName: null,
+        activeWalletType: null,
         error: err.message,
       });
     }
@@ -146,6 +169,7 @@ export function useMidnight() {
       address: null,
       network: null,
       walletName: null,
+      activeWalletType: null,
       error: null,
     });
   };

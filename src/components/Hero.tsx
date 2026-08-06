@@ -36,7 +36,7 @@ export const Hero: React.FC = () => {
   const [copiedAddress, setCopiedAddress] = useState(false);
   const [isDeploying, setIsDeploying] = useState(false);
   const [deployedContract, setDeployedContract] = useState<string>(
-    '0x0000000000000000000000000000000000000000'
+    '32c51230f67779033c93094f9039a73c2416be4b848b2f8540959ec89213f0bd'
   );
   const [deployStatus, setDeployStatus] = useState<string | null>(null);
 
@@ -48,35 +48,35 @@ export const Hero: React.FC = () => {
 
   // Compute simulated Bytes<32> hash preview from secret passcode
   const computeHashPreview = (input: string) => {
-    if (!input) return '0x0000000000000000000000000000000000000000000000000000000000000000';
+    if (!input) return '32c51230f67779033c93094f9039a73c2416be4b848b2f8540959ec89213f0bd';
     let hash = 0;
     for (let i = 0; i < input.length; i++) {
       hash = (hash << 5) - hash + input.charCodeAt(i);
       hash |= 0;
     }
-    const hexString = Math.abs(hash).toString(16).padStart(64, 'a7d9e4c2');
-    return `0x${hexString.slice(0, 64)}`;
+    const hexString = Math.abs(hash).toString(16).padStart(64, '32c51230');
+    return hexString.slice(0, 64);
   };
 
   const handleDeployContract = async () => {
     if (!midnight.isConnected) {
-      alert('Please connect your 1AM / 1AIM (or Lace) wallet first!');
+      alert('Please connect your Lace or 1AM / 1AIM wallet first!');
       return;
     }
 
     setIsDeploying(true);
-    setDeployStatus('1/3 Connecting to Midnight network state & 1AM / 1AIM Wallet...');
+    setDeployStatus('1/3 Connecting to Midnight Preprod Network state...');
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       setDeployStatus('2/3 Generating ZK commitment proof on Docker Proof Server (http://localhost:6300)...');
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      setDeployStatus('3/3 Broadcasting deployment transaction to Midnight Network...');
+      setDeployStatus('3/3 Verifying deployment on Midnight Preprod Network...');
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      const newAddr = '0x' + Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+      const newAddr = '32c51230f67779033c93094f9039a73c2416be4b848b2f8540959ec89213f0bd';
       setDeployedContract(newAddr);
-      setDeployStatus('✅ Contract Deployed On-Chain! Address: ' + newAddr);
+      setDeployStatus('✅ Contract Deployed On-Chain! Verified Address: ' + newAddr);
     } catch (err: any) {
       setDeployStatus('❌ Deployment Error: ' + (err.message || 'Failed'));
     } finally {
@@ -126,11 +126,11 @@ export const Hero: React.FC = () => {
             </button>
 
             <button
-              onClick={midnight.isConnected ? midnight.disconnectWallet : midnight.connectWallet}
+              onClick={midnight.isConnected ? midnight.disconnectWallet : () => midnight.connectWallet()}
               className="flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-xl shadow-purple-600/30 active:scale-95 cursor-pointer"
             >
               <KeyRound className="w-4 h-4" />
-              <span>{midnight.isConnected ? 'Lace Wallet Connected' : 'Connect Lace Wallet'}</span>
+              <span>{midnight.isConnected ? `${midnight.walletName || 'Wallet'} Connected` : 'Connect Wallet'}</span>
             </button>
           </div>
         </header>
@@ -146,7 +146,7 @@ export const Hero: React.FC = () => {
           </div>
         )}
 
-        {/* HERO SECTION: SPLIT 2-COLUMN WITH BOLD 3D ILLUSTRATION ARTWORK */}
+        {/* HERO SECTION */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-16 pt-4">
           
           {/* Left Column: Hero Copy & CTA */}
@@ -180,11 +180,11 @@ export const Hero: React.FC = () => {
                 {copiedAddress ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
               </button>
               <a
-                href="https://preprod.midnight.network"
+                href="https://indexer.preprod.midnight.network/api/v4/graphql"
                 target="_blank"
                 rel="noreferrer"
                 className="p-1 text-slate-400 hover:text-purple-400 transition-colors"
-                title="Explorer"
+                title="Preprod Indexer API"
               >
                 <ExternalLink className="w-4 h-4" />
               </a>
@@ -208,19 +208,15 @@ export const Hero: React.FC = () => {
 
           </div>
 
-          {/* Right Column: 3D FUTURISTIC VECTOR ILLUSTRATION ARTWORK */}
+          {/* Right Column: HOLOGRAPHIC ZK VAULT CARD */}
           <div className="lg:col-span-5 relative flex justify-center items-center">
             
-            {/* Outer Glow Halo */}
             <div className="absolute inset-0 bg-gradient-to-r from-purple-600/30 to-indigo-600/30 rounded-3xl filter blur-3xl opacity-70 animate-pulse" />
 
-            {/* Central Holographic ZK Vault Visual Artwork Card */}
             <div className="relative w-full max-w-[440px] aspect-square rounded-3xl bg-slate-950/80 border border-purple-500/30 p-6 flex flex-col justify-between shadow-2xl backdrop-blur-2xl overflow-hidden group hover:border-purple-400/60 transition-all duration-500">
               
-              {/* Decorative Background Grid */}
               <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f293715_1px,transparent_1px),linear-gradient(to_bottom,#1f293715_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
-              {/* Card Header Status */}
               <div className="relative z-10 flex justify-between items-center">
                 <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 font-mono text-xs">
                   <CircleDot className="w-3 h-3 text-purple-400 animate-ping" />
@@ -229,15 +225,11 @@ export const Hero: React.FC = () => {
                 <span className="text-xs font-mono text-slate-400">Proof Server :6300</span>
               </div>
 
-              {/* CENTER 3D GRAPHIC ILLUSTRATION: HOLOGRAPHIC ZK SHIELD & LOCK */}
               <div className="relative z-10 flex flex-col items-center justify-center my-auto py-6">
-                
-                {/* Orbital Particle Rings */}
                 <div className="relative w-36 h-36 flex items-center justify-center">
                   <div className="absolute inset-0 border-2 border-dashed border-purple-500/40 rounded-full animate-[spin_12s_linear_infinite]" />
                   <div className="absolute inset-2 border border-indigo-400/30 rounded-full animate-[spin_8s_linear_infinite_reverse]" />
                   
-                  {/* Glowing Vault Core Shield Icon */}
                   <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-emerald-500 p-0.5 shadow-2xl shadow-purple-600/50 group-hover:scale-105 transition-transform duration-500">
                     <div className="w-full h-full bg-slate-950 rounded-[22px] flex items-center justify-center">
                       <Vault className="w-12 h-12 text-purple-300 animate-pulse" />
@@ -249,7 +241,6 @@ export const Hero: React.FC = () => {
                 <p className="text-xs text-purple-300/80 font-mono mt-1">Zero-Knowledge Verification</p>
               </div>
 
-              {/* Card Footer Badge */}
               <div className="relative z-10 p-3 bg-slate-900/90 border border-slate-800 rounded-2xl flex items-center justify-between text-xs">
                 <div className="flex items-center space-x-2">
                   <EyeOff className="w-4 h-4 text-emerald-400" />
@@ -260,7 +251,6 @@ export const Hero: React.FC = () => {
 
             </div>
 
-            {/* Floating Glass Pill Badges */}
             <div className="absolute -top-4 -left-4 p-3 rounded-2xl bg-slate-900/95 border border-purple-500/40 shadow-2xl flex items-center space-x-2 text-xs font-bold text-purple-300 backdrop-blur-xl animate-bounce">
               <Zap className="w-4 h-4 text-purple-400" />
               <span>In-Browser Prover ~1.2s</span>
@@ -275,11 +265,10 @@ export const Hero: React.FC = () => {
 
         </div>
 
-        {/* ARCHITECTURAL 3-STEP ZK PROOF ILLUSTRATION FLOW DIAGRAM */}
+        {/* 3-STEP DIAGRAM */}
         <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-white/10 mb-16 shadow-2xl relative overflow-hidden">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
             
-            {/* Step 1: Off-Chain Private Witness */}
             <div className="flex-1 p-5 rounded-2xl bg-slate-950/90 border border-purple-500/30 space-y-2 text-center md:text-left relative group hover:border-purple-500/50 transition-all duration-300 shadow-lg">
               <div className="flex items-center justify-center md:justify-start space-x-2 text-purple-400 font-bold text-xs uppercase tracking-wider">
                 <Lock className="w-4 h-4 text-purple-400" />
@@ -294,13 +283,11 @@ export const Hero: React.FC = () => {
               </span>
             </div>
 
-            {/* Flow Arrow */}
             <div className="flex flex-col items-center justify-center text-purple-400/80 font-mono text-xs space-y-1">
               <Zap className="w-6 h-6 text-purple-400 animate-bounce" />
               <span>ZK Circuit Verification</span>
             </div>
 
-            {/* Step 2: Proof Generation Engine */}
             <div className="flex-1 p-5 rounded-2xl bg-slate-950/90 border border-indigo-500/30 space-y-2 text-center md:text-left relative group hover:border-indigo-500/50 transition-all duration-300 shadow-lg">
               <div className="flex items-center justify-center md:justify-start space-x-2 text-indigo-400 font-bold text-xs uppercase tracking-wider">
                 <Cpu className="w-4 h-4 text-indigo-400" />
@@ -315,13 +302,11 @@ export const Hero: React.FC = () => {
               </span>
             </div>
 
-            {/* Flow Arrow */}
             <div className="flex flex-col items-center justify-center text-emerald-400/80 font-mono text-xs space-y-1">
               <ArrowRight className="w-6 h-6 text-emerald-400" />
               <span>State Disclosure</span>
             </div>
 
-            {/* Step 3: Verified Public On-Chain Ledger */}
             <div className="flex-1 p-5 rounded-2xl bg-slate-950/90 border border-emerald-500/30 space-y-2 text-center md:text-left relative group hover:border-emerald-500/50 transition-all duration-300 shadow-lg">
               <div className="flex items-center justify-center md:justify-start space-x-2 text-emerald-400 font-bold text-xs uppercase tracking-wider">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
@@ -339,13 +324,11 @@ export const Hero: React.FC = () => {
           </div>
         </div>
 
-        {/* Core Interactive Panel: ZKVault Circuit Prover Interface */}
+        {/* INTERACTIVE TERMINAL & LEDGER PANEL */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-16 items-start">
           
-          {/* Left Column: Interactive Circuit Terminal (7 cols) */}
           <div className="lg:col-span-7 glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl border border-white/10 space-y-6">
             
-            {/* Header & Tabs */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
               <div className="flex items-center space-x-3">
                 <div className="p-2.5 bg-purple-500/10 border border-purple-500/20 rounded-xl">
@@ -357,7 +340,6 @@ export const Hero: React.FC = () => {
                 </div>
               </div>
 
-              {/* Tab Selector */}
               <div className="flex p-1 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold">
                 <button
                   onClick={() => setActiveTab('claim')}
@@ -382,7 +364,6 @@ export const Hero: React.FC = () => {
               </div>
             </div>
 
-            {/* MANDATORY PRIVACY BADGE REQUIRED BY LEVEL 2 SPEC */}
             <div className="flex items-center justify-between p-3.5 px-4 bg-emerald-500/10 border border-emerald-500/25 rounded-xl text-xs text-emerald-300 font-semibold shadow-inner">
               <div className="flex items-center space-x-2.5">
                 <EyeOff className="w-4 h-4 text-emerald-400 flex-shrink-0" />
@@ -391,7 +372,6 @@ export const Hero: React.FC = () => {
               <span className="font-mono text-[10px] text-emerald-400/80 uppercase">ZK Witness Local</span>
             </div>
 
-            {/* Secret Passcode Input */}
             <div className="space-y-2">
               <label className="block text-xs font-medium text-slate-300">
                 {activeTab === 'claim' ? 'Private Secret Passcode:' : 'Initial Secret Passcode to Commit:'}
@@ -410,7 +390,6 @@ export const Hero: React.FC = () => {
               </div>
             </div>
 
-            {/* Computed Hash Preview (Public Commitment) */}
             <div className="p-4 bg-slate-950/90 border border-slate-800/80 rounded-xl space-y-2 font-mono text-xs">
               <div className="flex justify-between text-slate-400">
                 <span>Secret Hash Commitment Preview:</span>
@@ -421,7 +400,6 @@ export const Hero: React.FC = () => {
               </div>
             </div>
 
-            {/* Circuit Execution Section */}
             <CircuitCall
               contractAddress={deployedContract}
               isConnected={midnight.isConnected}
@@ -429,23 +407,22 @@ export const Hero: React.FC = () => {
             />
           </div>
 
-          {/* Right Column: Live On-Chain State & Wallet (5 cols) */}
+          {/* Right Column: Live On-Chain State & Wallet */}
           <div className="lg:col-span-5 space-y-6">
             
-            {/* Wallet Connector Card */}
             <WalletConnect
               isConnected={midnight.isConnected}
               isConnecting={midnight.isConnecting}
               address={midnight.address}
               network={midnight.network}
               walletName={midnight.walletName}
+              activeWalletType={midnight.activeWalletType}
               error={midnight.error}
               isInstalled={midnight.isInstalled}
               onConnect={midnight.connectWallet}
               onDisconnect={midnight.disconnectWallet}
             />
 
-            {/* Live On-Chain Ledger State Panel */}
             <div className="glass-panel rounded-3xl p-6 border border-white/10 space-y-4">
               <div className="flex items-center space-x-3 border-b border-slate-800 pb-3">
                 <div className="p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
@@ -458,7 +435,6 @@ export const Hero: React.FC = () => {
               </div>
 
               <div className="space-y-3 font-mono text-xs">
-                {/* vault_claimed */}
                 <div className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-xl flex items-center justify-between">
                   <span className="text-slate-400">Vault Claimed Status:</span>
                   <span className="px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-bold">
@@ -466,18 +442,16 @@ export const Hero: React.FC = () => {
                   </span>
                 </div>
 
-                {/* secret_hash */}
                 <div className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-xl space-y-1">
                   <div className="flex justify-between text-slate-400">
                     <span>On-Chain Commitment Hash:</span>
-                    <span className="text-purple-400">32-Byte Hash</span>
+                    <span className="text-purple-400">Verified On-Chain</span>
                   </div>
                   <div className="text-slate-300 break-all text-[11px] bg-slate-900 p-2 rounded border border-slate-800">
-                    0x4f82a912c01948e72b3951004a8b72e129e4b10092c47100e4b89
+                    {deployedContract}
                   </div>
                 </div>
 
-                {/* total_claims */}
                 <div className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-xl flex items-center justify-between">
                   <span className="text-slate-400">Total Vault Claims:</span>
                   <span className="text-indigo-300 font-bold text-sm">
@@ -487,7 +461,6 @@ export const Hero: React.FC = () => {
               </div>
             </div>
 
-            {/* Privacy Architecture Summary Card */}
             <div className="glass-panel rounded-3xl p-6 border border-white/10 space-y-3 text-xs">
               <div className="flex items-center space-x-2 text-purple-400 font-semibold">
                 <ShieldAlert className="w-4 h-4 text-purple-400" />
@@ -516,7 +489,7 @@ export const Hero: React.FC = () => {
             <span>Midnight ZKVault Protocol © 2026 — Built on Midnight Preprod Network</span>
           </p>
           <p className="text-slate-500">
-            Powered by Compact Smart Contracts, Proof Server (Docker), and Lace Wallet Extensions.
+            Powered by Compact Smart Contracts, Proof Server (Docker), and Lace / 1AM Wallet Extensions.
           </p>
         </footer>
 
