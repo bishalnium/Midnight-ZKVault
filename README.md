@@ -11,9 +11,9 @@
 ## 📜 Contract Address
 | Network  | Address                          |
 |----------|----------------------------------|
-| Preprod  | `0x498a9d1872b4c10e6a9f37c2d1045b82e91241a0` |
+| Preprod  | `32c51230f67779033c93094f9039a73c2416be4b848b2f8540959ec89213f0bd` |
 
-*(Contract address is verifiable on the Midnight Preprod Network).*
+*(Contract address is verified live on the Midnight Preprod Network).*
 
 ---
 

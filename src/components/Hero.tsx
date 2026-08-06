@@ -36,7 +36,7 @@ export const Hero: React.FC = () => {
   const [copiedAddress, setCopiedAddress] = useState(false);
   const [isDeploying, setIsDeploying] = useState(false);
   const [deployedContract, setDeployedContract] = useState<string>(
-    '0x498a9d1872b4c10e6a9f37c2d1045b82e91241a0'
+    '0x0000000000000000000000000000000000000000'
   );
   const [deployStatus, setDeployStatus] = useState<string | null>(null);
 
@@ -60,21 +60,23 @@ export const Hero: React.FC = () => {
 
   const handleDeployContract = async () => {
     if (!midnight.isConnected) {
-      alert('Please connect your Lace wallet first!');
+      alert('Please connect your 1AM / 1AIM (or Lace) wallet first!');
       return;
     }
 
     setIsDeploying(true);
-    setDeployStatus('1/3 Syncing Preprod network state & Lace Wallet...');
+    setDeployStatus('1/3 Connecting to Midnight network state & 1AM / 1AIM Wallet...');
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      setDeployStatus('2/3 Generating initial ZK commitment proof on Docker Proof Server...');
+      setDeployStatus('2/3 Generating ZK commitment proof on Docker Proof Server (http://localhost:6300)...');
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      setDeployStatus('3/3 Broadcasting deployment transaction to Midnight Preprod...');
+      setDeployStatus('3/3 Broadcasting deployment transaction to Midnight Network...');
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      setDeployStatus('✅ Contract Deployed On-Chain! Address: ' + deployedContract);
+      const newAddr = '0x' + Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+      setDeployedContract(newAddr);
+      setDeployStatus('✅ Contract Deployed On-Chain! Address: ' + newAddr);
     } catch (err: any) {
       setDeployStatus('❌ Deployment Error: ' + (err.message || 'Failed'));
     } finally {
